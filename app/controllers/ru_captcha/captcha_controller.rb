@@ -6,7 +6,8 @@ module RuCaptcha
       headers['Pragma'] = 'no-cache'
       data = generate_rucaptcha
       opts = { disposition: 'inline', type: 'image/gif' }
-      send_data data, opts
+      headers['token'] = data.last
+      send_data data[1], opts
     end
   end
 end

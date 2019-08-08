@@ -19,8 +19,11 @@ module RuCaptcha
         code: res[0],
         time: Time.now.to_i
       }
-      RuCaptcha.cache.write(rucaptcha_token_key, token_val, expires_in: RuCaptcha.config.expires_in)
-      res[1]
+      key = rucaptcha_token_key
+      token = key.split(':').last
+      RuCaptcha.cache.write(key, token_val, expires_in: RuCaptcha.config.expires_in)
+      res << token
+      res
     end
 
     # Verify captcha code
@@ -38,35 +41,35 @@ module RuCaptcha
     #   verify_rucaptcha?(nil, keep_session: true)
     #   verify_rucaptcha?(nil, captcha: params[:user][:captcha])
     #
-    def verify_rucaptcha?(resource = nil, opts = {})
-      opts ||= {}
-
-      store_info = RuCaptcha.cache.read(rucaptcha_token_key)
-      # make sure move used key
-      RuCaptcha.cache.delete(rucaptcha_token_key) unless opts[:keep_session]
-
-      # Make sure session exist
-      if store_info.blank?
-        return add_rucaptcha_validation_error
-      end
-
-      # Make sure not expire
-      if (Time.now.to_i - store_info[:time]) > RuCaptcha.config.expires_in
-        return add_rucaptcha_validation_error
-      end
-
-      # Make sure parama have captcha
-      captcha = (opts[:captcha] || params[:_rucaptcha] || '').downcase.strip
-      if captcha.blank?
-        return add_rucaptcha_validation_error
-      end
-
-      if captcha != store_info[:code]
-        return add_rucaptcha_validation_error
-      end
-
-      true
-    end
+    # def verify_rucaptcha?(resource = nil, opts = {})
+    #   opts ||= {}
+    #
+    #   store_info = RuCaptcha.cache.read(rucaptcha_token_key)
+    #   # make sure move used key
+    #   RuCaptcha.cache.delete(rucaptcha_token_key) unless opts[:keep_session]
+    #
+    #   # Make sure session exist
+    #   if store_info.blank?
+    #     return add_rucaptcha_validation_error
+    #   end
+    #
+    #   # Make sure not expire
+    #   if (Time.now.to_i - store_info[:time]) > RuCaptcha.config.expires_in
+    #     return add_rucaptcha_validation_error
+    #   end
+    #
+    #   # Make sure parama have captcha
+    #   captcha = (opts[:captcha] || params[:_rucaptcha] || '').downcase.strip
+    #   if captcha.blank?
+    #     return add_rucaptcha_validation_error
+    #   end
+    #
+    #   if captcha != store_info[:code]
+    #     return add_rucaptcha_validation_error
+    #   end
+    #
+    #   true
+    # end
 
     private
 
