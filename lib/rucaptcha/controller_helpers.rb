@@ -7,20 +7,19 @@ module RuCaptcha
     end
 
     # session key of rucaptcha
-    def rucaptcha_sesion_key_key
-      session_id = session.respond_to?(:id) ? session.id : session[:session_id]
-      warning_when_session_invalid if session_id.blank?
-      ['rucaptcha-session', session_id].join(':')
+    def rucaptcha_token_key
+      token = Array.new(16){[*'a'..'z',*'A'..'Z',*'0'..'9'].sample}.join
+      ['rucaptcha-token', token].join(':')
     end
 
     # Generate a new Captcha
     def generate_rucaptcha
       res = RuCaptcha.generate()
-      session_val = {
+      token_val = {
         code: res[0],
         time: Time.now.to_i
       }
-      RuCaptcha.cache.write(rucaptcha_sesion_key_key, session_val, expires_in: RuCaptcha.config.expires_in)
+      RuCaptcha.cache.write(rucaptcha_token_key, token_val, expires_in: RuCaptcha.config.expires_in)
       res[1]
     end
 
@@ -42,9 +41,9 @@ module RuCaptcha
     def verify_rucaptcha?(resource = nil, opts = {})
       opts ||= {}
 
-      store_info = RuCaptcha.cache.read(rucaptcha_sesion_key_key)
+      store_info = RuCaptcha.cache.read(rucaptcha_token_key)
       # make sure move used key
-      RuCaptcha.cache.delete(rucaptcha_sesion_key_key) unless opts[:keep_session]
+      RuCaptcha.cache.delete(rucaptcha_token_key) unless opts[:keep_session]
 
       # Make sure session exist
       if store_info.blank?
