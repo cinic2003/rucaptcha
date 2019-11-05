@@ -7,7 +7,7 @@ module RuCaptcha
       data = generate_rucaptcha
       opts = { disposition: 'inline', type: 'image/gif' }
       headers['token'] = data.last
-      send_data data[1], opts
+      render json: {token: data.last, data: Base64.encode64(data[1])}
     end
   end
 end
