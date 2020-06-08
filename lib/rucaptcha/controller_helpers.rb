@@ -8,7 +8,8 @@ module RuCaptcha
 
     # session key of rucaptcha
     def rucaptcha_token_key
-      token = Array.new(16){[*'a'..'z',*'A'..'Z',*'0'..'9'].sample}.join
+      # token = Array.new(16){[*'a'..'z',*'A'..'Z',*'0'..'9'].sample}.join
+      token = Array.new(16){[*'0'..'9'].sample}.join
       ['rucaptcha-token', token].join(':')
     end
 
